@@ -1,0 +1,79 @@
+name: Dependency Update
+
+on:
+    schedule:
+        # Runs at 02:00 UTC every Monday
+        - cron: "0 2 * * 1"
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    update-dependencies:
+        name: Update Dependencies
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v5
+              with:
+                  version: "latest"
+
+            - name: Update dependencies
+              run: |
+                  uv lock --upgrade
+
+            - name: Install updated dependencies
+              run: |
+                  uv sync --all-extras
+
+            - name: Run tests
+              id: test
+              run: |
+                  uv run pytest tests/ -v
+              continue-on-error: true
+
+            - name: Create Pull Request
+              if: steps.test.outcome == 'success'
+              uses: peter-evans/create-pull-request@v6
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: "chore: update dependencies"
+                  title: "chore: update dependencies"
+                  body: |
+                      Automated dependency update
+
+                      - Updated `uv.lock` with latest compatible versions
+                      - All tests passing ✅
+
+                      Please review and merge if everything looks good.
+                  branch: chore/update-dependencies
+                  delete-branch: true
+                  labels: |
+                      dependencies
+                      automated
+
+            - name: Comment on failure
+              if: steps.test.outcome == 'failure'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      github.rest.issues.create({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        title: '⚠️ Dependency update failed tests',
+                        body: 'The automated dependency update failed the test suite. Manual intervention required.',
+                        labels: ['dependencies', 'bug']
+                      })

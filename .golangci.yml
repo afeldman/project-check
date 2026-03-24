@@ -1,0 +1,18 @@
+version: '2'
+run:
+  timeout: 5m
+linters:
+  enable:
+  - govet
+  - revive
+  - staticcheck
+  - lll
+linters-settings:
+  lll:
+    line-length: 100
+  revive:
+    rules:
+    - name: exported
+      severity: warning
+    - name: comment-spacings
+      severity: warning
