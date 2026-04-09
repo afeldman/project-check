@@ -27,10 +27,6 @@ archives:
 checksum:
   name_template: "checksums.txt"
 
-after:
-  hooks:
-    - gotofish gen --release project-check --desc "LLM-powered project standards checker"
-
 changelog:
   sort: asc
   filters:
@@ -38,6 +34,20 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^chore:"
+
+homebrew_casks:
+  - name: project-check
+    repository:
+      owner: afeldman
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    homepage: "https://github.com/afeldman/project-check"
+    description: "LLM-powered project standards checker"
+    license: "Apache-2.0"
+    binaries:
+      - project-check
+    skip_upload: auto
 
 release:
   footer: >-

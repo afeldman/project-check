@@ -31,7 +31,7 @@ type Finding struct {
 // Run executes the ReAct loop
 func Run(cfg Config) ([]Finding, error) {
 	// Build tools and handlers
-	tools, handlers := BuildTools(cfg.FixMode)
+	tools, handlers := BuildTools(cfg.FixMode, cfg.DryRun)
 	
 	// Build system prompt
 	systemPrompt := BuildSystemPrompt(cfg.Rules, cfg.Dir, cfg.FixMode)
@@ -112,14 +112,6 @@ func Run(cfg Config) ([]Finding, error) {
 			}
 			
 			findings = result.Findings
-			
-			// If in dry-run fix mode, show diffs
-			if cfg.DryRun && cfg.FixMode && len(findings) > 0 {
-				// Note: In a real implementation, we would need to track
-				// which files were modified and show diffs
-				fmt.Fprintf(os.Stderr, "Dry run mode: would apply fixes for %d findings\n", len(findings))
-			}
-			
 			return findings, nil
 		}
 		

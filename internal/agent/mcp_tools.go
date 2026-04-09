@@ -8,7 +8,7 @@ import (
 type ToolHandler func(args string) string
 
 // BuildTools builds the list of tools and their handlers
-func BuildTools(fixMode bool) ([]llm.Tool, map[string]ToolHandler) {
+func BuildTools(fixMode, dryRun bool) ([]llm.Tool, map[string]ToolHandler) {
 	tools := []llm.Tool{
 		{
 			Type: "function",
@@ -97,11 +97,15 @@ func BuildTools(fixMode bool) ([]llm.Tool, map[string]ToolHandler) {
 
 	// Add write_file tool only in fix mode
 	if fixMode {
+		desc := "Write content to file path"
+		if dryRun {
+			desc = "Show diff of what would be written to file path (dry-run)"
+		}
 		tools = append(tools, llm.Tool{
 			Type: "function",
 			Function: llm.ToolFunction{
 				Name:        "write_file",
-				Description: "Write content to file path",
+				Description: desc,
 				Parameters: map[string]interface{}{
 					"type": "object",
 					"properties": map[string]interface{}{
@@ -118,7 +122,11 @@ func BuildTools(fixMode bool) ([]llm.Tool, map[string]ToolHandler) {
 				},
 			},
 		})
-		handlers["write_file"] = handleWriteFile
+		if dryRun {
+			handlers["write_file"] = handleWriteFileDryRun
+		} else {
+			handlers["write_file"] = handleWriteFile
+		}
 	}
 
 	return tools, handlers

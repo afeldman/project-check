@@ -127,3 +127,23 @@ func handleWriteFile(args string) string {
 	}
 	return fmt.Sprintf("Successfully wrote to %s", params.Path)
 }
+
+// handleWriteFileDryRun handles the write_file tool in dry-run mode:
+// prints the diff to stdout but does not modify the file.
+func handleWriteFileDryRun(args string) string {
+	var params struct {
+		Path    string `json:"path"`
+		Content string `json:"content"`
+	}
+	if err := json.Unmarshal([]byte(args), &params); err != nil {
+		return fmt.Sprintf("Error parsing arguments: %v", err)
+	}
+	existing, err := os.ReadFile(params.Path)
+	var oldContent string
+	if err == nil {
+		oldContent = string(existing)
+	}
+	diff := unifiedDiff(params.Path, oldContent, params.Content)
+	fmt.Print(diff)
+	return fmt.Sprintf("Dry-run: showed diff for %s (file not modified)", params.Path)
+}

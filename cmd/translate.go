@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/afeldman/project-check/internal/llm"
 	"github.com/afeldman/project-check/internal/rules"
 	"github.com/spf13/cobra"
 )
@@ -30,16 +29,7 @@ func init() {
 }
 
 func runTranslate(cmd *cobra.Command, args []string) {
-	// For now, we'll create a default config
-	// In the actual implementation, we would load the config from root.go
-	cfg := llm.Config{
-		Enabled:  true,
-		Endpoint: "http://localhost:11434/v1",
-		Model:    "llama3.2",
-		TimeoutS: 60,
-	}
-
-	if err := rules.Translate(cfg, standardsPath, outPath); err != nil {
+	if err := rules.Translate(getLLMConfig(), standardsPath, outPath); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(2)
 	}

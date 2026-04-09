@@ -10,7 +10,7 @@ import (
 )
 
 // WriteSARIF generates a SARIF v2.1.0 report file
-func WriteSARIF(path string, findings []agent.Finding, rules rules.RuleSet) error {
+func WriteSARIF(path string, findings []agent.Finding, rules rules.RuleSet, toolVersion string) error {
 	// Create SARIF rules from the rule set
 	sarifRules := make([]sarifRule, 0, len(rules.Rules))
 	for _, rule := range rules.Rules {
@@ -108,7 +108,7 @@ func WriteSARIF(path string, findings []agent.Finding, rules rules.RuleSet) erro
 				Tool: sarifTool{
 					Driver: sarifDriver{
 						Name:           "project-check",
-						Version:        "1.0.0", // TODO: Get actual version
+						Version:        toolVersion,
 						InformationURI: "https://github.com/afeldman/project-check",
 						Rules:          sarifRules,
 					},

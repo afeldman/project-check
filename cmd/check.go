@@ -45,17 +45,8 @@ func runCheck(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// Load LLM config from root command
-	// For now, use defaults since getLLMConfig() is not implemented
-	llmCfg := llm.Config{
-		Enabled:  true,
-		Endpoint: "http://localhost:11434/v1",
-		Model:    "llama3.2",
-		TimeoutS: 60,
-	}
-	
-	// Create LLM client
-	client := llm.New(llmCfg)
+	// Create LLM client from config file (or defaults)
+	client := llm.New(getLLMConfig())
 	
 	// Create agent config
 	cfg := agent.Config{
@@ -78,7 +69,7 @@ func runCheck(cmd *cobra.Command, args []string) {
 
 	// Generate SARIF output if requested
 	if sarifPath != "" {
-		if err := report.WriteSARIF(sarifPath, findings, ruleSet); err != nil {
+		if err := report.WriteSARIF(sarifPath, findings, ruleSet, Version); err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing SARIF file: %v\n", err)
 			os.Exit(2)
 		}
