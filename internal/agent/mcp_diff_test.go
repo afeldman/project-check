@@ -15,24 +15,25 @@ func TestUnifiedDiff_NoChange(t *testing.T) {
 func TestUnifiedDiff_NewFile(t *testing.T) {
 	result := unifiedDiff("foo.go", "", "hello\nworld\n")
 	if !strings.Contains(result, "+ hello") {
-		t.Error("expected added lines in diff")
+		t.Errorf("expected added lines in diff, got:\n%s", result)
 	}
-	if strings.Contains(result, "- ") {
-		t.Error("unexpected removed lines for new file")
+	// "\n- " marks an actual removed line (not the "---" header)
+	if strings.Contains(result, "\n- ") {
+		t.Errorf("unexpected removed lines for new file, got:\n%s", result)
 	}
 }
 
 func TestUnifiedDiff_DeletedLines(t *testing.T) {
 	result := unifiedDiff("foo.go", "a\nb\nc\n", "a\nc\n")
-	if !strings.Contains(result, "-") {
-		t.Error("expected removed line marker")
+	if !strings.Contains(result, "\n- ") {
+		t.Errorf("expected removed line marker, got:\n%s", result)
 	}
 }
 
 func TestUnifiedDiff_AddedLines(t *testing.T) {
 	result := unifiedDiff("foo.go", "a\nc\n", "a\nb\nc\n")
-	if !strings.Contains(result, "+") {
-		t.Error("expected added line marker")
+	if !strings.Contains(result, "\n+ ") {
+		t.Errorf("expected added line marker, got:\n%s", result)
 	}
 }
 
